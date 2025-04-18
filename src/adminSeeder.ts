@@ -5,13 +5,13 @@ import bcrypt from 'bcrypt'
 const adminSeeder = async():Promise<void> =>{
     const [data] = await User.findAll({
         where:{
-            email:"p2admin@admin.com"
+            email:"p2admin@gmail.com"
 
         }
     })
     if(!data){
             await User.create({
-                email :"p2admin@admin.com",
+                email :"p2admin@gmail.com",
                 password:bcrypt.hashSync("admin123",8),
                 role:"admin",
                 username : 'p2admin'
