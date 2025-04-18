@@ -50,7 +50,7 @@ class AuthController{
             return
         }
         // if all checks pass, generate & return token
-       const token = jwt.sign({id:data.id},"r@dhe!123",{
+       const token = jwt.sign({id:data.id},process.env.SECRET_KEY as string,{
         expiresIn:"1d"
        })
        res.status(200).json({

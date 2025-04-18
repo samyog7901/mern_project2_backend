@@ -17,12 +17,13 @@ class Product extends Model{
     declare id: string
 
     @Column({
-        type : DataType.STRING
+        type : DataType.STRING,
+        allowNull : false
     })
     declare productName: string
 
     @Column({
-        type : DataType.STRING
+        type : DataType.TEXT
     })
     declare description: string
 
@@ -34,12 +35,12 @@ class Product extends Model{
     @Column({
         type : DataType.INTEGER
     })
-    declare stocks: number
+    declare stockQty: number
 
     @Column({
         type : DataType.STRING
     })
-    declare image: string
+    declare imageUrl: string
 
 }
 

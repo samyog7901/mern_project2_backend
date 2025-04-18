@@ -8,11 +8,14 @@ import './database/connection'
 
 app.use(express.json())
 import userRoute from './routes/userRoute'
-import productRoute from './routes/productRoute'
 import adminSeeder from './adminSeeder'
-
 // admin seeder
 adminSeeder()
+import productRoute from './routes/productRoute'
+import categoryController from './controllers/categoryController'
+
+
+
 
 
 
@@ -21,8 +24,9 @@ adminSeeder()
 
 
 app.use("",userRoute)
-app.use("",productRoute)
+app.use("/admin/product",productRoute)
 
 app.listen(PORT,()=>{
+    categoryController.seedCategory()
     console.log(`Server is running on port ${PORT}`)
 })

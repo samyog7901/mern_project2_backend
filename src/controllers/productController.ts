@@ -1,21 +1,35 @@
 
 import { Request, Response } from "express"
 import Product from "../database/models/productModel"
+import { Authrequest } from "../middleware/authMiddleware"
+import User from "../database/models/userModel"
+import Category from "../database/models/Category"
 
 class ProductController{
-    public static async addProduct(req:Request,res:Response):Promise<void>{
-        const { productName,description,price,stocks,image } = req.body
-        // if(!username || !email || !password){
-        //     res.status(400).json({message:"Please fill all the fields"})
-        //     return
-        // }
+    async addProduct(req:Authrequest,res:Response):Promise<void>{
+        const userId = req.user?.id
+        const { productName,description,price,stockQty,categoryId } = req.body
+        let fileName 
+        if(req.file){
+            fileName = req.file?.filename
+        }else{
+            fileName = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTBFYhA2swHUuq1Hzyb0LKOrBP_OE3izbq89Q&s"
+        }
+      if(!productName || !description || !price || !stockQty || !categoryId){
+        res.status(400).json({
+            message:"Please fill in all fields"
+        })
+        return
+      }
 
         await Product.create({
             productName,
             description,
             price,
-            stocks,
-            image
+            stockQty,
+            imageUrl : fileName,
+            userId : userId,
+            categoryId : categoryId
         })
 
         res.status(200).json({
@@ -24,6 +38,26 @@ class ProductController{
 
 
     }
+    async getAllProducts(req:Request,res:Response):Promise<void>{
+        const data = await Product.findAll(
+            {
+                include : [
+                    {
+                        model : User,
+                        attributes : ["id","username","email"]
+                    },
+                    {
+                        model : Category,
+                        attributes : ["id","categoryName"]
+                    }
+                ]
+            }
+        )
+        res.status(200).json({
+            message : "Products fetched successfully",
+            data
+        })
+    }
 }
 
-export default ProductController
+export default new ProductController()
