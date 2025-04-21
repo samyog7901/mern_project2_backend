@@ -9,7 +9,7 @@ class CategoryController{
             categoryName : "Electronics"
         },
         {
-            categoryName : "Fashion"
+            categoryName : "Passion"
         },
         {
             categoryName : "Groceries"
@@ -34,7 +34,7 @@ class CategoryController{
         const category = await Category.create({
             categoryName
         })
-        res.status(201).json({message:"Category addedd successfully",category})
+        res.status(200).json({message:"Category addedd successfully"})
 
     }
     async getCategories(req:Request,res:Response):Promise<void>{

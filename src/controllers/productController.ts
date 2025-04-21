@@ -109,6 +109,35 @@ class ProductController{
             })
         }
     }
+    async updateProduct(req: Request, res: Response): Promise<void> {
+        const { id } = req.params
+        const { productName, description, price, stockQty, imageUrl } = req.body
+      
+        const product = await Product.findOne({ where: { id } })
+      
+        if (product) {
+          await Product.update(
+            {
+              productName,
+              description,
+              price,
+              stockQty,
+              imageUrl
+            },
+            {
+              where: { id }
+            }
+          )
+          res.status(200).json({
+            message: "Product updated successfully"
+          })
+        } else {
+          res.status(404).json({
+            message: "No product with that id"
+          })
+        }
+      }
+      
 }
 
 export default new ProductController()
