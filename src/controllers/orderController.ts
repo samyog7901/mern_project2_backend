@@ -1,10 +1,11 @@
 import { Authrequest } from "../middleware/authMiddleware"
 import {response, Response} from 'express'
-import { KhaltiResponse, OrderData, PaymentMethod, TransactionStatus, TransactionVerificationResponse } from "../types/orderTypes"
+import { KhaltiResponse, OrderData, OrderStatus, PaymentMethod, TransactionStatus, TransactionVerificationResponse } from "../types/orderTypes"
 import Order from "../database/models/Order"
 import Payment from "../database/models/Payment"
 import OrderDetail from "../database/models/OrderDetails"
 import axios from "axios"
+import Product from "../database/models/productModel"
 
 
 
@@ -101,6 +102,83 @@ class OrderController{
             })
         }
     }
+    // Customer Side Starts here
+    async fetchMyOrders(req:Authrequest,res:Response):Promise<void>{
+        const userId = req.user?.id
+        const orders = await Order.findAll({
+            where : {
+                userId
+            },
+            include : [
+                {
+                    model : Payment
+                }
+            ]
+        })
+        if(orders.length > 0){
+            res.status(200).json({
+                message : "order fetched successfully",
+                data : orders
+            })
+        }else{
+            res.status(404).json({
+                message : "You haven't ordered anything yet..",
+                data : []
+            })
+        }
+
+    }
+    async fetchOrderDetails(req:Authrequest,res:Response):Promise<void>{
+        const userId = req.user?.id
+        const orderId = req.params.id
+        const orderDetails = await Order.findAll({
+            where : {
+                orderId
+            },
+            include : [
+                {
+                    model : Product
+                }
+            ]
+        })
+        if(orderDetails.length > 0){
+            res.status(200).json({
+                message : "order details fetched successfully",
+                data : orderDetails
+            })
+        }else{
+            res.status(404).json({
+                message : "No any order details of that id",
+                data : []
+            })
+        }
+    }
+    async cancelMyOrder(req:Authrequest,res:Response):Promise<void>{
+        const userId = req.user?.id
+        const orderId = req.params.id
+        const order:any = await Order.findAll({
+            where : {
+                userId,
+                id : orderId
+            }
+        })
+        if(order?.orderStatus === OrderStatus.Ontheway || order?.orderStatus === OrderStatus.Preparation){
+            res.status(200).json({
+                message : "You cannot cancell order when it is ontheway ore prepared" 
+            })
+            return
+        }
+        await Order.update({orderStatus : OrderStatus.Cancelled},{
+            where : {
+                id : userId
+            }
+        })
+        res.status(200).json({
+            message : "Order cancelled successfully"
+        })
+    }
+    // Customer Side ends here
+
 }
 
 export default new OrderController()
