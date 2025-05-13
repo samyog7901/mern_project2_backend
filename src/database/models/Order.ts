@@ -1,5 +1,7 @@
 
 import {Table,Column,Model,DataType,CreatedAt, PrimaryKey} from 'sequelize-typescript'
+import { HasMany } from 'sequelize-typescript'
+import OrderDetail from './OrderDetails'
 
 @Table({
     tableName:'orders',
@@ -49,6 +51,10 @@ class Order extends Model{
         allowNull : false
     })
     declare orderStatus: string
+    
+    @HasMany(()=> OrderDetail)
+    declare orderDetails: OrderDetail[]
+    
 
 }
 

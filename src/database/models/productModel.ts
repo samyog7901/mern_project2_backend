@@ -1,5 +1,7 @@
 
 import {Table,Column,Model,DataType,CreatedAt, PrimaryKey} from 'sequelize-typescript'
+import { HasMany } from 'sequelize-typescript'
+import OrderDetail from './OrderDetails'
 
 @Table({
     tableName:'products',
@@ -41,6 +43,8 @@ class Product extends Model{
         type : DataType.STRING
     })
     declare imageUrl: string
+    @HasMany(() => OrderDetail)
+    declare orderDetails: OrderDetail[]
 
 }
 
