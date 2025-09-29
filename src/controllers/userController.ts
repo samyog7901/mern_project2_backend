@@ -22,6 +22,7 @@ class AuthController{
         res.status(200).json({
             message:"User registered successfully"
         })
+       
 
 
     }
@@ -55,7 +56,15 @@ class AuthController{
        })
        res.status(200).json({
         message:"User logged in successfully",
-        data : token
+        data : {
+            user : {
+                id : data.id,
+                username : data.username,
+                email : data.email,
+                role : data.role
+            },
+            token
+        }
         
        })
 

@@ -60,7 +60,7 @@ class ProductController{
     }
     async getSingleProduct(req:Request,res:Response):Promise<void>{
         const id = req.params.id
-        const data = await Product.findAll({
+        const data = await Product.findOne({
             where : {
                 id : id
             },
@@ -75,7 +75,7 @@ class ProductController{
                 }
             ]
         })
-        if(data.length === 0){
+        if(!data){
             res.status(404).json({
                 message : "No product with that id"
             })
@@ -111,7 +111,13 @@ class ProductController{
     }
     async updateProduct(req: Request, res: Response): Promise<void> {
         const { id } = req.params
-        const { productName, description, price, stockQty, imageUrl } = req.body
+        const { productName, description, price, stockQty } = req.body
+        let fileName 
+        if(req.file){
+            fileName = req.file?.filename
+        }else{
+            fileName = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTBFYhA2swHUuq1Hzyb0LKOrBP_OE3izbq89Q&s"
+        }
       
         const product = await Product.findOne({ where: { id } })
       
@@ -122,7 +128,7 @@ class ProductController{
               description,
               price,
               stockQty,
-              imageUrl
+              imageUrl:fileName
             },
             {
               where: { id }

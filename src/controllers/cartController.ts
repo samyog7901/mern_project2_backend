@@ -9,7 +9,7 @@ class CartController{
     async addToCart(req:Authrequest,res:Response):Promise<void>{
         const userId = req.user?.id
         const {quantity,productId} = req.body
-        if(quantity <= 0 || !productId){
+        if(!quantity || !productId){
             res.status(400).json({
                 message : "please provide quantity and product ID"
             })
@@ -17,7 +17,7 @@ class CartController{
 
         // check if product already exists in the cart table or not
         let cartItem = await Cart.findOne({
-            where: { userId, productId }
+            where: { productId,userId }
         })
         if(cartItem){
             cartItem.quantity += quantity
@@ -26,14 +26,20 @@ class CartController{
         }else{
             // insert into Cart table
             cartItem = await Cart.create({
+                quantity,
                 userId,
-                productId,
-                quantity
+                productId
+                
             })
         }
+        const data = await Cart.findAll({
+            where : {
+                userId
+            }
+        })
         res.status(200).json({
             message: "Item added to cart",
-            data : cartItem
+            data
         })
     }
     async getMyCarts(req:Authrequest,res:Response):Promise<void>{
@@ -45,7 +51,6 @@ class CartController{
             include :[
                 {
                     model : Product,
-                    attributes : ['id', 'productName', 'price'],
                     include : [
                         {
                             model : Category,

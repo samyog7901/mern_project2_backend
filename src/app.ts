@@ -6,6 +6,8 @@ import * as dotenv from 'dotenv'
 dotenv.config()
 import './database/connection'
 
+
+
 app.use(express.json())
 import userRoute from './routes/userRoute'
 import categoryRoute from './routes/categoryRoute'
@@ -16,9 +18,11 @@ import productRoute from './routes/productRoute'
 import categoryController from './controllers/categoryController'
 import cartRoute from './routes/cartRoute'
 import orderRoute from './routes/orderRoute'
+import cors from 'cors'
 
-
-
+app.use(cors({
+    origin : '*'
+}))
 
 
 
