@@ -52,8 +52,8 @@ class Order extends Model{
     })
     declare orderStatus: string
     
-    @HasMany(()=> OrderDetail)
-    declare orderDetails: OrderDetail[]
+    // @HasMany(()=> OrderDetail)
+    // declare orderDetails: OrderDetail[]
     
 
 }

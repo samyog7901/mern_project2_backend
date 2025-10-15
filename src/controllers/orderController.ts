@@ -6,6 +6,7 @@ import Payment from "../database/models/Payment"
 import OrderDetail from "../database/models/OrderDetails"
 import axios from "axios"
 import Product from "../database/models/productModel"
+import Cart from "../database/models/Cart"
 
 class ExtendedOrder extends Order{
     declare paymentId : string
@@ -24,8 +25,13 @@ class OrderController{
 
         
         const paymentData = await Payment.create({
-            paymentMethod : paymentDetails.paymentMethod
-        })
+            paymentMethod: paymentDetails.paymentMethod,
+            paymentStatus:
+              paymentDetails.paymentMethod === PaymentMethod.Cod
+                ? "unpaid"
+                : "pending", // default pending for Khalti
+          });
+          
         const orderData = await Order.create({
             phoneNumber,
             shippingAddress,
@@ -34,23 +40,31 @@ class OrderController{
             paymentId : paymentData.id
         })
 
+        let responseOrderData;
+
         for(var i = 0; i<items.length; i++){
-            await OrderDetail.create({
+            responseOrderData = await OrderDetail.create({
                 quantity : items[i].quantity,
-                productId : items[0].productId,
+                productId : items[i].productId,
                 orderId : orderData.id
+            })
+            await Cart.destroy({
+                where : {
+                    productId : items[i].productId, 
+                    userId : userId
+                }
             })
         }
         if(paymentDetails.paymentMethod == PaymentMethod.Khalti){
             // khalti integration
             const data = {
-                return_url : "http://localhost:3000/success",
+                return_url : "http://localhost:5173/payment-verify",
                 purchase_order_id : orderData.id,
                 amount : totalAmount * 100, //khaltile paisa ma linxa
-                website_url : "http://localhost:3000/",
+                website_url : "http://localhost:5173/",
                 purchase_order_name : 'orderName_' + orderData.id
             }
-            const response = await axios.post('https://a.khalti.com/api/v2/epayment/initiate/',data,{
+            const response = await axios.post('https://dev.khalti.com/api/v2/epayment/initiate/',data,{
                 headers : {
                     "Authorization" : 'Key 1e19ce514cfa4794a713c142a44c180d'
                 }
@@ -60,13 +74,15 @@ class OrderController{
             paymentData.save()
             res.status(200).json({
                 message : "Order placed successfully",
-                url : khaltiResponse.payment_url
+                url : khaltiResponse.payment_url,
+                data : responseOrderData
             })
         
 
         }else{
             res.status(200).json({
-                message : "order placed successfully"
+                message : "order placed successfully",
+                data : responseOrderData
             })
         }
 
@@ -81,19 +97,27 @@ class OrderController{
             })
             return
         }
-        const response = await axios.post("https://a.khalti.com/api/v2/epayment/lookup/",{pidx},{
+        const response = await axios.post("https://dev.khalti.com/api/v2/epayment/lookup/",{pidx},{
             headers : {
                 "Authorization" : "Key 1e19ce514cfa4794a713c142a44c180d"
             }
         })
         const data:TransactionVerificationResponse = response.data
-        console.log(data)
+        console.log(data , "data")
         if(data.status === TransactionStatus.Completed){
+            const payment = await Payment.findOne({ where: { pidx } })
+          if(payment){
             await Payment.update({paymentStatus:'paid'},{
                 where : {
                     pidx : pidx
                 }
             })
+            await Order.update(
+                { orderStatus: 'ontheway' },
+                { where: { paymentId: payment.id} }
+              )
+          }
+          
             res.status(200).json({
                 message : "Payment verified successfully"
             })
@@ -113,7 +137,7 @@ class OrderController{
             },
             include : [
                 {
-                    model : Payment
+                    model: Payment
                 }
             ]
         })
@@ -134,15 +158,16 @@ class OrderController{
         const userId = req.user?.id
         const orderId = req.params.id
         const orderDetails = await OrderDetail.findAll({
-            where : {
-                orderId
-            },
-            include : [
-                {
-                    model : Product
-                }
+            where: { orderId },
+            include: [
+              { model: Product },
+              {
+                model: Order,
+                include: [Payment]   // 👈 this brings nested Payment info
+              }
             ]
-        })
+          })
+          
         if(orderDetails.length > 0){
             res.status(200).json({
                 message : "order details fetched successfully",

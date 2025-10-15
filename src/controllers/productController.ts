@@ -112,12 +112,10 @@ class ProductController{
     async updateProduct(req: Request, res: Response): Promise<void> {
         const { id } = req.params
         const { productName, description, price, stockQty } = req.body
-        let fileName 
-        if(req.file){
-            fileName = req.file?.filename
-        }else{
-            fileName = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTBFYhA2swHUuq1Hzyb0LKOrBP_OE3izbq89Q&s"
-        }
+        
+        const fileName = req.file
+        ? req.file.filename
+        :  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTBFYhA2swHUuq1Hzyb0LKOrBP_OE3izbq89Q&s";
       
         const product = await Product.findOne({ where: { id } })
       
@@ -128,7 +126,7 @@ class ProductController{
               description,
               price,
               stockQty,
-              imageUrl:fileName
+              imageUrl:fileName 
             },
             {
               where: { id }

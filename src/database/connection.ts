@@ -14,15 +14,15 @@ const sequelize = new Sequelize({
     password : process.env.DB_PASSWORD,
     username : process.env.DB_USERNAME,
     port : Number(process.env.DB_PORT),
-    models : [__dirname + '/models/*.{ts,js}']
+    models : [__dirname + '/models']
 })
 
 sequelize.authenticate()
 .then(() => console.log('Database connected'))
 .catch(err => console.log('Error connecting to database', err))
 
-sequelize.sync({force : false}).then(()=>{
-    console.log("synced!!")  
+sequelize.sync({alter : false}).then(()=>{
+    console.log("synced!!")
 })
 
 // Relationships

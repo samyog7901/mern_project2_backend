@@ -1,4 +1,4 @@
-import OrderDetail from "../database/models/OrderDetails"
+// import OrderDetail from "../database/models/OrderDetails"
 
 
 export interface OrderData{
@@ -26,7 +26,9 @@ export enum PaymentMethod{
 
 export enum PaymentStatus{
     Paid = 'paid',
-    Unpaid = 'unpaid'
+    Unpaid = 'unpaid',
+    Pending = 'pending'
+    
 
 }
 
