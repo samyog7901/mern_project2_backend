@@ -42,7 +42,7 @@ class Product extends Model{
     @Column({
         type : DataType.STRING
     })
-    declare imageUrl: string
+    declare imageUrl?: string
     // @HasMany(() => OrderDetail)
     // declare orderDetails: OrderDetail[]
 

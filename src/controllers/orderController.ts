@@ -7,6 +7,7 @@ import OrderDetail from "../database/models/OrderDetails"
 import axios from "axios"
 import Product from "../database/models/productModel"
 import Cart from "../database/models/Cart"
+import User from "../database/models/userModel"
 
 class ExtendedOrder extends Order{
     declare paymentId : string
@@ -154,6 +155,28 @@ class OrderController{
         }
 
     }
+    async fetchOrders(req:Authrequest,res:Response):Promise<void>{
+        
+        const orders = await Order.findAll({
+            include : [
+                {
+                    model: Payment
+                }
+            ]
+        })
+        if(orders.length > 0){
+            res.status(200).json({
+                message : "order fetched successfully",
+                data : orders
+            })
+        }else{
+            res.status(404).json({
+                message : "You haven't ordered anything yet..",
+                data : []
+            })
+        }
+
+    }
     async fetchOrderDetails(req:Authrequest,res:Response):Promise<void>{
         const userId = req.user?.id
         const orderId = req.params.id
@@ -163,7 +186,7 @@ class OrderController{
               { model: Product },
               {
                 model: Order,
-                include: [Payment]   // 👈 this brings nested Payment info
+                include: [Payment,{model:User,attributes:["id","username","email"]}]   // 👈 this brings nested Payment info
               }
             ]
           })
@@ -243,7 +266,7 @@ class OrderController{
         if(order){
             await OrderDetail.destroy({
                 where : {
-                    id : orderId
+                    orderId : orderId
                 }
             })
 

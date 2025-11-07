@@ -31,10 +31,11 @@ class CategoryController{
             res.status(400).json({message:"Category name is required"})
             return
         }
-        const category = await Category.create({
+         await Category.create({
             categoryName
         })
-        res.status(200).json({message:"Category addedd successfully"})
+        const data = await Category.findAll()
+        res.status(200).json({message:"Category addedd successfully",data})
 
     }
     async getCategories(req:Request,res:Response):Promise<void>{

@@ -11,9 +11,9 @@ class ProductController{
         const { productName,description,price,stockQty,categoryId } = req.body
         let fileName 
         if(req.file){
-            fileName = req.file?.filename
+            fileName = process.env.BACKEND_URL + req.file?.filename
         }else{
-            fileName = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTBFYhA2swHUuq1Hzyb0LKOrBP_OE3izbq89Q&s"
+            fileName = "https://m.media-amazon.com/images/I/71sBygGN7TL.jpg"
         }
       if(!productName || !description || !price || !stockQty || !categoryId){
         res.status(400).json({
@@ -115,7 +115,7 @@ class ProductController{
         
         const fileName = req.file
         ? req.file.filename
-        :  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTBFYhA2swHUuq1Hzyb0LKOrBP_OE3izbq89Q&s";
+        :  "https://m.media-amazon.com/images/I/71sBygGN7TL.jpg";
       
         const product = await Product.findOne({ where: { id } })
       

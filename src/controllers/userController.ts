@@ -3,7 +3,14 @@ import { Request, Response } from "express"
 import User from "../database/models/userModel"
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
+import { Authrequest } from "../middleware/authMiddleware"
+import Order from "../database/models/Order"
+import OrderDetail from "../database/models/OrderDetails"
+import Payment from "../database/models/Payment"
 
+class ExtendedOrder extends Order{
+    declare paymentId : string
+}
 class AuthController{
     public static async registerUser(req:Request,res:Response):Promise<void>{
         const { username,role,email,password} = req.body
@@ -67,12 +74,46 @@ class AuthController{
         }
         
        })
+    }
 
+    public static async fetchUsers(req:Authrequest,res:Response):Promise<void>{
+        
+        const users = await User.findAll()
+        if(users.length > 0){
+            res.status(200).json({
+                message : "order fetched successfully",
+                data : users
+            })
+        }else{
+            res.status(404).json({
+                message : "You haven't ordered anything yet..",
+                data : []
+            })
+        }
 
+    }
 
+    public static async deleteUser(req:Authrequest,res:Response):Promise<void>{
+        const userId = req.params.id
+        const orders = await Order.findAll({where:{userId}})
 
+        for(const order of orders){
+            const extendedOrder = order as ExtendedOrder
+            await OrderDetail.destroy({where:{orderId:order.id}})
 
+            if(extendedOrder.paymentId){
+                await Payment.destroy({where:{id:extendedOrder.paymentId}})
+            }
 
+            await Order.destroy({where:{id:order.id}})
+        }
+        
+        await User.destroy({where:{id:userId}})
+        res.status(200).json({
+            message : "user and user's all related data deleted successfully"
+            
+        })
+        
 
     }
 }

@@ -1,4 +1,4 @@
-// import OrderDetail from "../database/models/OrderDetails"
+
 
 
 export interface OrderData{

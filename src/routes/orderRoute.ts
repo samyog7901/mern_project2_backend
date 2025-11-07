@@ -5,7 +5,9 @@ import orderController from '../controllers/orderController'
 const router:Router = express.Router()
 
 
-router.route('/').post(authMiddleware.isAuthenticated,errorHandler(orderController.createOrder))
+router.route('/')
+.post(authMiddleware.isAuthenticated,errorHandler(orderController.createOrder))
+.get(authMiddleware.isAuthenticated,authMiddleware.restrictTo(Role.Admin),errorHandler(orderController.fetchOrders))
 
 router.route('/verify').post(authMiddleware.isAuthenticated,errorHandler(orderController.verifyTransaction))
 
@@ -17,7 +19,7 @@ router.route("/admin/payment/:id").patch(authMiddleware.isAuthenticated,authMidd
 
 
 router.route("/admin/:id").patch(authMiddleware.isAuthenticated,authMiddleware.restrictTo(Role.Admin),errorHandler(orderController.changeOrderStatus))
-.delete(authMiddleware.isAuthenticated,authMiddleware.restrictTo(Role.Admin),errorHandler(orderController.deleteOrder))
+.delete(authMiddleware.isAuthenticated,errorHandler(orderController.deleteOrder))
 
 
 
