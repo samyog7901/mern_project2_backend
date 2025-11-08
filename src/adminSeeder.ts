@@ -12,7 +12,7 @@ const adminSeeder = async():Promise<void> =>{
     if(!data){
             await User.create({
                 email :"p2admin@gmail.com",
-                password : bcrypt.hashSync("admin123",8),
+                password : bcrypt.hashSync("ShopNestAdmin321",8),
                 role : "admin",
                 username : 'p2admin'
             })
