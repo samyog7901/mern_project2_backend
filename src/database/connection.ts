@@ -18,7 +18,7 @@ const sequelize = new Sequelize(process.env.DATABASE_URL!,{
     // dialectOptions: {
     //     socketPath: '/Applications/XAMPP/xamppfiles/var/mysql/mysql.sock'
     // },
-    models : [__dirname + '/models'],
+    models : [User, Product, Category, Cart, Order, OrderDetail, Payment],
     logging : console.log,
 })
 
