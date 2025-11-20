@@ -7,13 +7,14 @@ import Order from "./models/Order"
 import OrderDetail from "./models/OrderDetails"
 import Payment from "./models/Payment"
 
-const sequelize = new Sequelize({
-    database : process.env.DB_NAME,
+const sequelize = new Sequelize(process.env.DATABASE_URL!,{
+    // database : process.env.DB_NAME,
     dialect : 'mysql',
-    host : process.env.DB_HOST,
-    password : process.env.DB_PASSWORD || '',
-    username : process.env.DB_USERNAME,
-    port : Number(process.env.DB_PORT),
+
+    // host : process.env.DB_HOST,
+    // password : process.env.DB_PASSWORD || '',
+    // username : process.env.DB_USERNAME,
+    // port : Number(process.env.DB_PORT),
     // dialectOptions: {
     //     socketPath: '/Applications/XAMPP/xamppfiles/var/mysql/mysql.sock'
     // },
