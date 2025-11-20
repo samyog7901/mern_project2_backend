@@ -26,6 +26,9 @@ import cors from 'cors'
 import { Server } from 'socket.io'
 import { promisify } from 'util'
 import User from './database/models/userModel'
+import Order from './database/models/Order'
+import OrderDetail from './database/models/OrderDetails'
+import Payment from './database/models/Payment'
 
 app.use(cors({
     origin : '*'
@@ -49,7 +52,7 @@ const server = app.listen(PORT,()=>{
     console.log(`Server is running on port ${PORT}`)
 })
 
-const io = new Server(server,{
+export const io = new Server(server,{
     cors : {
         origin : ['http://localhost:5173', 'http://localhost:5174']
     }
@@ -83,6 +86,24 @@ io.on("connection",async (socket)=>{
             io.to(findUser.socketId).emit("statusUpdated",{type,status,orderId})
         }
     })
+
+    
+    socket.on("deleteOrder", async ({ orderId }) => {
+        const order: any = await Order.findByPk(orderId);
+      
+        if (!order) return;
+      
+        const extendedOrder = order as any;
+      
+        await OrderDetail.destroy({ where: { orderId } });
+        await Payment.destroy({ where: { id: extendedOrder.paymentId } });
+        await Order.destroy({ where: { id: orderId } });
+      
+        io.emit("orderDeleted", orderId);
+      });
+      
+    
+      
     socket.on("disconnect",()=>{
         onlineUsers.forEach((value,key)=>{
             if(value.socketId === socket.id){

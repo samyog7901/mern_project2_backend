@@ -11,10 +11,14 @@ const sequelize = new Sequelize({
     database : process.env.DB_NAME,
     dialect : 'mysql',
     host : process.env.DB_HOST,
-    password : process.env.DB_PASSWORD,
+    password : process.env.DB_PASSWORD || '',
     username : process.env.DB_USERNAME,
     port : Number(process.env.DB_PORT),
-    models : [__dirname + '/models']
+    // dialectOptions: {
+    //     socketPath: '/Applications/XAMPP/xamppfiles/var/mysql/mysql.sock'
+    // },
+    models : [__dirname + '/models'],
+    logging : console.log,
 })
 
 sequelize.authenticate()
