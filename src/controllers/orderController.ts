@@ -60,10 +60,10 @@ class OrderController{
         if(paymentDetails.paymentMethod == PaymentMethod.Khalti){
             // khalti integration
             const data = {
-                return_url : "http://localhost:5173/payment-verify",
+                return_url : "https://ecommerce-client-eta-plum.vercel.app/payment-verify",
                 purchase_order_id : orderData.id,
                 amount : totalAmount * 100, //khaltile paisa ma linxa
-                website_url : "http://localhost:5173/",
+                website_url : "https://ecommerce-client-eta-plum.vercel.app/",
                 purchase_order_name : 'orderName_' + orderData.id
             }
             const response = await axios.post('https://dev.khalti.com/api/v2/epayment/initiate/',data,{
