@@ -32,8 +32,9 @@ import OrderDetail from './database/models/OrderDetails'
 import Payment from './database/models/Payment'
 
 app.use(cors({
-    origin : ['https://ecommerce-admin-five-omega.vercel.app/','https://ecommerce-client-eta-plum.vercel.app/']
-}))
+    origin: /https:\/\/ecommerce-(admin|client)-.*\.vercel\.app/,
+    credentials: true, // if you need cookies or auth headers
+  }));
 
 
 
@@ -55,8 +56,20 @@ const server = app.listen(PORT,()=>{
 
 export const io = new Server(server,{
     cors : {
-        origin : ['http://localhost:5173', 'http://localhost:5174']
+        origin: (origin, callback) => {
+            const allowedOrigins = [
+              'https://ecommerce-admin-five-omega.vercel.app',
+              'https://ecommerce-client-eta-plum.vercel.app'
+            ];
+            if (!origin || allowedOrigins.includes(origin)) {
+              callback(null, true);
+            } else {
+              callback(new Error("Not allowed by CORS"));
+            }
+        },
+          credentials: true, // if you use cookies or auth headers
     }
+
 })
 
 const onlineUsers = new Map<string, { socketId: string; role: string }>();
