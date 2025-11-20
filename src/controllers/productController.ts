@@ -18,8 +18,10 @@ class ProductController{
         }
     
         // construct proper image URL
+        const backendURL = process.env.BACKEND_URL?.replace(/\/$/, '')
+        console.log("Backend-URl", process.env.BACKEND_URL)
         const fileName = req.file
-            ? `${process.env.BACKEND_URL}/uploads/${req.file.filename}`
+            ? `${backendURL}/uploads/${req.file.filename}`
             : "https://m.media-amazon.com/images/I/71sBygGN7TL.jpg"
     
         await Product.create({
@@ -123,8 +125,9 @@ class ProductController{
         }
     
         // set image URL
+        const backendURL = process.env.BACKEND_URL?.replace(/\/$/, '')
         const fileName = req.file && req.file.filename
-            ? process.env.BACKEND_URL + "/uploads/" + req.file.filename
+            ? backendURL + "/uploads/" + req.file.filename
             : product.imageUrl  // fallback to existing image if no new file
     
         await Product.update(
