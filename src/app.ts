@@ -32,7 +32,7 @@ import OrderDetail from './database/models/OrderDetails'
 import Payment from './database/models/Payment'
 
 app.use(cors({
-    origin : '*'
+    origin : ['https://ecommerce-admin-five-omega.vercel.app/','https://ecommerce-client-eta-plum.vercel.app/']
 }))
 
 
