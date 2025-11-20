@@ -14,12 +14,12 @@ app.use(express.json())
 app.use(express.static("./src/uploads"))
 import userRoute from './routes/userRoute'
 import categoryRoute from './routes/categoryRoute'
-import adminSeeder from './adminSeeder'
+// import adminSeeder from './adminSeeder'
 // admin seeder
-adminSeeder()
+// adminSeeder()
 
 import productRoute from './routes/productRoute'
-import categoryController from './controllers/categoryController'
+// import categoryController from './controllers/categoryController'
 import cartRoute from './routes/cartRoute'
 import orderRoute from './routes/orderRoute'
 
@@ -49,7 +49,7 @@ app.use("/order",orderRoute)
 
 
 const server = app.listen(PORT,()=>{
-    categoryController.seedCategory()
+    // categoryController.seedCategory()
     console.log(`Server is running on port ${PORT}`)
 })
 

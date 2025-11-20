@@ -6,6 +6,8 @@ import Cart from "./models/Cart"
 import Order from "./models/Order"
 import OrderDetail from "./models/OrderDetails"
 import Payment from "./models/Payment"
+import adminSeeder from "../adminSeeder"
+import categoryController from "../controllers/categoryController"
 
 const sequelize = new Sequelize(process.env.DATABASE_URL!,{
     // database : process.env.DB_NAME,
@@ -26,8 +28,10 @@ sequelize.authenticate()
 .then(() => console.log('Database connected'))
 .catch(err => console.log('Error connecting to database', err))
 
-sequelize.sync({alter : true}).then(()=>{
+sequelize.sync({alter : true}).then(async()=>{
     console.log("synced!!")
+    await adminSeeder();
+    await categoryController.seedCategory();
 })
 
 // Relationships
