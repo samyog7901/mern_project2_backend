@@ -11,7 +11,7 @@ import jwt from 'jsonwebtoken'
 
 app.use(express.json())
 
-app.use(express.static("./src/uploads"))
+app.use("/uploads", express.static(path.join(__dirname, "uploads")))
 import userRoute from './routes/userRoute'
 import categoryRoute from './routes/categoryRoute'
 // import adminSeeder from './adminSeeder'
@@ -30,6 +30,7 @@ import User from './database/models/userModel'
 import Order from './database/models/Order'
 import OrderDetail from './database/models/OrderDetails'
 import Payment from './database/models/Payment'
+import path from 'path'
 
 app.use(cors({
     origin: /https:\/\/ecommerce-(admin|client)-.*\.vercel\.app/,
