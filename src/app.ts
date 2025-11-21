@@ -1,6 +1,7 @@
 import * as dotenv from 'dotenv'
 dotenv.config()
-import express,{Application,Request,Response} from 'express'
+import express,{Application} from 'express'
+import path from 'path'
 const app:Application = express()
 
 const PORT = process.env.PORT || 3000
@@ -30,7 +31,7 @@ import User from './database/models/userModel'
 import Order from './database/models/Order'
 import OrderDetail from './database/models/OrderDetails'
 import Payment from './database/models/Payment'
-import path from 'path'
+
 
 app.use(cors({
     origin: /https:\/\/ecommerce-(admin|client)-.*\.vercel\.app/,
