@@ -12,6 +12,12 @@ import categoryController from "../controllers/categoryController"
 const sequelize = new Sequelize(process.env.DATABASE_URL!,{
     // database : process.env.DB_NAME,
     dialect : 'mysql',
+    dialectOptions : {
+        ssl: {
+            // require: true,
+            rejectUnauthorized: false
+        }
+    },
 
     // host : process.env.DB_HOST,
     // password : process.env.DB_PASSWORD || '',
@@ -21,7 +27,7 @@ const sequelize = new Sequelize(process.env.DATABASE_URL!,{
     //     socketPath: '/Applications/XAMPP/xamppfiles/var/mysql/mysql.sock'
     // },
     models : [User, Product, Category, Cart, Order, OrderDetail, Payment],
-    logging : console.log,
+    logging : false
 })
 
 sequelize.authenticate()
