@@ -34,7 +34,7 @@ sequelize.authenticate()
 .then(() => console.log('Database connected'))
 .catch(err => console.log('Error connecting to database', err))
 
-sequelize.sync({alter : true}).then(async()=>{
+sequelize.sync().then(async()=>{
     console.log("synced!!")
     await adminSeeder();
     await categoryController.seedCategory();
