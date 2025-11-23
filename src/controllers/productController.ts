@@ -4,6 +4,7 @@ import Product from "../database/models/productModel"
 import { Authrequest } from "../middleware/authMiddleware"
 import User from "../database/models/userModel"
 import Category from "../database/models/Category"
+import { cloudinary } from "../services/cloudinaryConfig"
 
 class ProductController{
     async addProduct(req: Authrequest, res: Response): Promise<void> {
@@ -17,9 +18,7 @@ class ProductController{
             return
         }
     
-        // construct proper image URL
-        const backendURL = process.env.BACKEND_URL?.replace(/\/$/, '')
-        console.log("Backend-URl", process.env.BACKEND_URL)
+  
         const fileUrl = req.file
         ? req.file.path
         : "https://m.media-amazon.com/images/I/71sBygGN7TL.jpg"
@@ -87,46 +86,67 @@ class ProductController{
             })
         }
     }
-    async deleteProduct(req:Request,res:Response):Promise<void>{
-        const {id} = req.params
-        const data = await Product.findAll({
-            where : {
-                id : id
-            }
-        })
-        if(data.length > 0){
-            await Product.destroy({
-                where : {
-                    id : id
-                }
-            })
-            res.status(200).json({
-                message : "Product deleted successfully"
 
-            })
-        }else{
-            res.status(404).json({
-                message : "No product with that id"
-            })
+
+    async deleteProduct(req: Request, res: Response): Promise<void> {
+        const { id } = req.params
+
+        const product = await Product.findOne({ where: { id } })
+
+        if (!product) {
+            res.status(404).json({ message: "No product with that id" })
+            return
         }
+
+        // Delete Cloudinary image
+        if (product.imageUrl && product.imageUrl.includes("cloudinary.com")) {
+            const parts = product.imageUrl.split("/")
+            const publicIdWithExt = parts[parts.length - 1]  // xyz123.jpg
+            const folder = parts[parts.length - 2]           // ecommerce-project
+            const publicId = `${folder}/${publicIdWithExt.split(".")[0]}`
+
+            try {
+                await cloudinary.v2.uploader.destroy(publicId)
+            } catch (err) {
+                console.log("Cloudinary delete error:", err)
+            }
+        }
+
+        await Product.destroy({ where: { id } })
+
+        res.status(200).json({
+            message: "Product deleted successfully"
+        })
     }
+
     async updateProduct(req: Request, res: Response): Promise<void> {
         const { id } = req.params
         const { productName, description, price, stockQty } = req.body
     
-        // fetch product first
         const product = await Product.findOne({ where: { id } })
     
         if (!product) {
-            res.status(404).json({
-                message: "No product with that id"
-            })
+            res.status(404).json({ message: "No product with that id" })
             return
         }
     
-        // set image URL
-        const newImage = req.file ? req.file.path : product.imageUrl
-
+        let newImage = product.imageUrl
+    
+        // If new file uploaded
+        if (req.file) {
+    
+            // Delete old Cloudinary image
+            if (product.imageUrl?.includes("cloudinary.com")) {
+                const parts = product.imageUrl.split("/")
+                const publicIdWithExt = parts[parts.length - 1]
+                const folder = parts[parts.length - 2]
+                const publicId = `${folder}/${publicIdWithExt.split(".")[0]}`
+                await cloudinary.v2.uploader.destroy(publicId)
+            }
+    
+            // Save new image URL
+            newImage = req.file.path
+        }
     
         await Product.update(
             {
@@ -143,6 +163,7 @@ class ProductController{
             message: "Product updated successfully"
         })
     }
+    
     
       
 }
