@@ -1,6 +1,6 @@
 import express,{Router} from 'express'
 import errorHandler from '../services/catchAsyncError'
-import {storage, upload } from '../middleware/multerMiddleware'
+import upload from '../middleware/multerMiddleware'
 import authMiddleware, { Role } from '../middleware/authMiddleware'
 import productController from '../controllers/productController'
 
