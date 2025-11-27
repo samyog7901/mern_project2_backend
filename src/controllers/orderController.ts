@@ -41,22 +41,32 @@ class OrderController{
             userId,
             paymentId : paymentData.id
         })
-
         let responseOrderData;
-
-        for(var i = 0; i<items.length; i++){
+        for (const item of items) {
             responseOrderData = await OrderDetail.create({
-                quantity : items[i].quantity,
-                productId : items[i].productId,
-                orderId : orderData.id
-            })
+              quantity: item.quantity,
+              productId: item.productId,
+              orderId: orderData.id
+            });
+          
+            // Decrease stock
+            const product = await Product.findByPk(item.productId);
+            if (product) {
+              await Product.update(
+                { stockQty: product.stockQty - item.quantity },
+                { where: { id: item.productId } }
+              );
+            }
+          
+            // Remove from cart
             await Cart.destroy({
-                where : {
-                    productId : items[i].productId, 
-                    userId : userId
-                }
-            })
-        }
+              where: {
+                productId: item.productId,
+                userId
+              }
+            });
+          }
+          
         if(paymentDetails.paymentMethod == PaymentMethod.Khalti){
             // khalti integration
             const data = {
@@ -204,30 +214,49 @@ class OrderController{
             })
         }
     }
-    async cancelMyOrder(req:Authrequest,res:Response):Promise<void>{
-        const userId = req.user?.id
-        const orderId = req.params.id
-        const order:any = await Order.findAll({
-            where : {
-                userId,
-                id : orderId
-            }
-        })
-        if(order?.orderStatus === OrderStatus.Ontheway || order?.orderStatus === OrderStatus.Preparation){
-            res.status(200).json({
-                message : "You cannot cancell order when it is ontheway ore prepared" 
-            })
-            return
+    async cancelMyOrder(req: Authrequest, res: Response): Promise<void> {
+        const userId = req.user?.id;
+        const orderId = req.params.id;
+    
+        const order = await Order.findOne({
+            where: { userId, id: orderId }
+        });
+    
+        if (!order) {
+            res.status(404).json({ message: "Order not found" });
+            return;
         }
-        await Order.update({orderStatus : OrderStatus.Cancelled},{
-            where : {
-                id : orderId
+    
+        if ([OrderStatus.Ontheway, OrderStatus.Preparation].includes(order.orderStatus as OrderStatus)) {
+            res.status(400).json({
+                message: "You cannot cancel the order when it is on the way or in preparation"
+            });
+            return;
+        }
+    
+        // Get order details
+        const orderDetails = await OrderDetail.findAll({ where: { orderId } });
+    
+        // Increment stock
+        for (const detail of orderDetails) {
+            const product = await Product.findByPk((detail as any).productId);
+            if (product) {
+                await Product.update(
+                    { stockQty: product.stockQty + (detail as any).quantity },
+                    { where: { id: (detail as any).productId } }
+                );
             }
-        })
-        res.status(200).json({
-            message : "Order cancelled successfully"
-        })
+        }
+    
+        // Cancel order
+        await Order.update(
+            { orderStatus: OrderStatus.Cancelled },
+            { where: { id: orderId } }
+        );
+    
+        res.status(200).json({ message: "Order cancelled successfully" });
     }
+    
     // Customer Side ends here
 
     async changeOrderStatus(req:Request,res:Response):Promise<void>{
