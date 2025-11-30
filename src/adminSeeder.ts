@@ -5,16 +5,16 @@ import bcrypt from 'bcrypt'
 const adminSeeder = async():Promise<void> =>{
     const [data] = await User.findAll({
         where:{
-            email:process.env.ADMIN_EMAIL
+            email:"p2admin@gmail.com"
 
         }
     })
     if(!data){
             await User.create({
-                email :process.env.ADMIN_EMAIL,
-                password :bcrypt.hashSync("ShopNestAdmin321",8),
-                role :process.env.ADMIN_ROLE,
-                username :process.env.ADMIN_USERNAME
+                email :"p2admin@gmail.com",
+                password : bcrypt.hashSync("ShopNestAdmin321",8),
+                role : "admin",
+                username : 'p2admin'
             })
             console.log("admin credentials seeded successfully")
             
