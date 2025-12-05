@@ -5,6 +5,8 @@ import { Authrequest } from "../middleware/authMiddleware"
 import User from "../database/models/userModel"
 import Category from "../database/models/Category"
 import { cloudinary } from "../services/cloudinaryConfig"
+import fs from "fs"
+import csv from "csv-parser"
 
 class ProductController{
     async addProduct(req: Authrequest, res: Response): Promise<void> {
@@ -37,6 +39,58 @@ class ProductController{
             message: "Product added successfully"
         })
     }
+
+    async addBulkProducts(req: Authrequest, res: Response): Promise<void> {
+        const file = req?.file
+        if (!file) {
+            res.status(400).json({ message: "CSV file is required" })
+            return
+        }
+    
+        const results: any[] = []
+    
+        try {
+            // Wrap CSV reading in a Promise to await it
+            await new Promise<void>((resolve, reject) => {
+                fs.createReadStream(file.path)
+                    .pipe(csv())
+                    .on("data", (data) => results.push(data))
+                    .on("end", resolve)
+                    .on("error", reject)
+            })
+    
+            // Process rows after CSV is fully read
+            for (const row of results) {
+                const { name, description, price, stockQty, categoryId, image } = row
+    
+                if (!name || !description || !price || !stockQty || !categoryId || !image) {
+                    console.log("Skipping invalid row:", row)
+                    continue
+                }
+    
+                await Product.create({
+                    productName: name,
+                    description,
+                    price: parseFloat(price),
+                    stockQty: parseInt(stockQty),
+                    imageUrl: image,
+                    userId: (req as any).user?.id,
+                    categoryId: parseInt(categoryId),
+                })
+            }
+    
+            fs.unlinkSync(file.path) // remove CSV after processing
+    
+            res.status(200).json({
+                message: "Bulk products uploaded successfully",
+                total: results.length,
+            })
+        } catch (err) {
+            console.error(err)
+            res.status(500).json({ message: "Error uploading bulk products" })
+        }
+    }
+    
     
     async getAllProducts(req:Request,res:Response):Promise<void>{
         const data = await Product.findAll(
