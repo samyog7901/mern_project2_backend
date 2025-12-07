@@ -4,10 +4,10 @@ import multer from "multer"
 
 // Store CSV in a temporary folder
 const csvStorage = multer.diskStorage({
-    destination: function (req, file, cb) {
+    destination: function (req, file, cb:any) {
         cb(null, "uploads/csv")
     },
-    filename: function (req, file, cb) {
+    filename: function (req, file, cb:any) {
         const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9)
         cb(null, uniqueSuffix + "-" + file.originalname)
     }

@@ -42,6 +42,15 @@ class ProductController{
 
     async addBulkProducts(req: Authrequest, res: Response): Promise<void> {
         const file = req?.file
+       
+            if (!req.file)  res.status(400).send("No file uploaded");
+            
+            const csvPath = file?.path; // multer saved path
+            console.log("CSV uploaded to:", csvPath);
+        
+            // Now read the CSV using csvPath
+    
+        
         if (!file) {
             res.status(400).json({ message: "CSV file is required" })
             return
