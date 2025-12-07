@@ -78,17 +78,17 @@ class ProductController{
           let inserted = 0;
     
           for (const row of results) {
-            const { name, description, price, stockQty, categoryId, image } = row;
+            const { productName, description, price, stockQty, categoryId, image } = row;
     
             // Skip rows that are missing required fields
-            if (!name || !description || !price || !stockQty || !categoryId || !image) {
+            if (!productName || !description || !price || !stockQty || !categoryId || !image) {
               console.log("Skipping invalid row:", row);
               continue;
             }
     
             try {
               await Product.create({
-                productName: name.trim(),
+                productName: productName.trim(),
                 description: description.trim(),
                 price: parseFloat(price),
                 stockQty: parseInt(stockQty),
@@ -112,7 +112,7 @@ class ProductController{
           console.error("Bulk upload error:", err);
           res.status(500).json({ message: "Error uploading bulk products" });
         }
-      }
+    }
     
     
     async getAllProducts(req:Request,res:Response):Promise<void>{
