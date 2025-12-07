@@ -41,74 +41,73 @@ class ProductController{
     }
 
     async addBulkProducts(req: Authrequest, res: Response): Promise<void> {
-        const file = req?.file
-       
-            if (!file)  res.status(400).send("CSV file is required");
-            
-            // const csvPath = file?.path; // multer saved path
-            // console.log("CSV uploaded to:", csvPath);
-        
-            // Now read the CSV using csvPath
+        const file = req?.file;
     
-        
         if (!file) {
-            res.status(400).json({ message: "CSV file is required" })
-            return
+          res.status(400).json({ message: "CSV file is required" });
+          return;
         }
     
-        const results: any[] = []
+        const results: any[] = [];
     
         try {
-
-            
-
-            await new Promise<void>((resolve, reject) => {
-           
-              const readable = new stream.Readable();
-              readable._read = () => {}; // noop
-              readable.push(file.buffer);
-              readable.push(null);
-            
-              readable
-                .pipe(csv())
-                .on("data", (data:any) => results.push(data))
-                .on("end", resolve)
-                .on("error", reject);
-            });
+          // Wrap CSV reading in a Promise
+          await new Promise<void>((resolve, reject) => {
+            const readable = new stream.Readable();
+            readable._read = () => {};
+            readable.push(file.buffer);
+            readable.push(null);
     
-            // Process rows after CSV is fully read
-            for (const row of results) {
-                const { productName, description, price, stockQty, categoryId, image } = row
+            readable
+              .pipe(csv({
+                separator: ",",
+                quote: `"`,       // handle multi-line quoted fields
+                skipLines: 0,
+                strict: true
+              }))
+              .on("data", (data: any) => results.push(data))
+              .on("end", resolve)
+              .on("error", reject);
+          });
     
-                if (!productName || !description || !price || !stockQty || !categoryId || !image) {
-                    console.log("Skipping invalid row:", row)
-                    continue
-                }
-
-
+          let inserted = 0;
     
-                await Product.create({
-                    productName,
-                    description,
-                    price: parseFloat(price),
-                    stockQty: parseInt(stockQty),
-                    imageUrl: image,
-                    userId: req.user?.id,
-                    categoryId,
-                })
+          for (const row of results) {
+            const { name, description, price, stockQty, categoryId, image } = row;
+    
+            // Skip rows that are missing required fields
+            if (!name || !description || !price || !stockQty || !categoryId || !image) {
+              console.log("Skipping invalid row:", row);
+              continue;
             }
     
-
+            try {
+              await Product.create({
+                productName: name.trim(),
+                description: description.trim(),
+                price: parseFloat(price),
+                stockQty: parseInt(stockQty),
+                imageUrl: image.trim(),
+                userId: req.user?.id,
+                categoryId: categoryId.trim(),
+              });
+              inserted++;
+            } catch (err) {
+              console.log("Error inserting row, skipping:", row, err);
+              continue;
+            }
+          }
     
-            res.status(200).json({
-                message: "Bulk products uploaded successfully",
-                total: results.length,
-            })
+          res.status(200).json({
+            message: "Bulk products uploaded successfully",
+            totalRows: results.length,
+            insertedRows: inserted,
+          });
         } catch (err) {
-            console.error("Bulk upload error:",err)
-            res.status(500).json({ message: "Error uploading bulk products" })
+          console.error("Bulk upload error:", err);
+          res.status(500).json({ message: "Error uploading bulk products" });
         }
-    }
+      }
     
     
     async getAllProducts(req:Request,res:Response):Promise<void>{
