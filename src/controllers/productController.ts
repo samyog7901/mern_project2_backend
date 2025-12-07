@@ -76,6 +76,8 @@ class ProductController{
                     console.log("Skipping invalid row:", row)
                     continue
                 }
+                const parsedCategoryId = parseInt(categoryId) || categoryId; // if you use UUIDs
+
     
                 await Product.create({
                     productName: name,
@@ -84,7 +86,7 @@ class ProductController{
                     stockQty: parseInt(stockQty),
                     imageUrl: image,
                     userId: (req as any).user?.id,
-                    categoryId: parseInt(categoryId),
+                    categoryId: categoryId,
                 })
             }
     
