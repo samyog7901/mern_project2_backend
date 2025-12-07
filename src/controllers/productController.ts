@@ -51,11 +51,16 @@ class ProductController{
         const results: any[] = [];
     
         try {
+            const csvContent = file.buffer.toString("utf-8");
+            const normalizedCsv = csvContent.replace(/"([^"]*)"/gs, (match, p1) => {
+                return `"${p1.replace(/\r?\n/g, " ")}"`;
+            });
+
           // Wrap CSV reading in a Promise
           await new Promise<void>((resolve, reject) => {
             const readable = new stream.Readable();
             readable._read = () => {};
-            readable.push(file.buffer);
+            readable.push(normalizedCsv);
             readable.push(null);
     
             readable
@@ -63,7 +68,7 @@ class ProductController{
                 separator: ",",
                 quote: `"`,       // handle multi-line quoted fields
                 skipLines: 0,
-                strict: true
+                strict: false
               }))
               .on("data", (data: any) => results.push(data))
               .on("end", resolve)
