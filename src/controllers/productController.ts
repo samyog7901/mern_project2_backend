@@ -5,8 +5,8 @@ import { Authrequest } from "../middleware/authMiddleware"
 import User from "../database/models/userModel"
 import Category from "../database/models/Category"
 import { cloudinary } from "../services/cloudinaryConfig"
-import fs from "fs"
 import csv from "csv-parser"
+import stream from "stream"
 
 class ProductController{
     async addProduct(req: Authrequest, res: Response): Promise<void> {
@@ -43,10 +43,10 @@ class ProductController{
     async addBulkProducts(req: Authrequest, res: Response): Promise<void> {
         const file = req?.file
        
-            if (!req.file)  res.status(400).send("No file uploaded");
+            if (!file)  res.status(400).send("CSV file is required");
             
-            const csvPath = file?.path; // multer saved path
-            console.log("CSV uploaded to:", csvPath);
+            // const csvPath = file?.path; // multer saved path
+            // console.log("CSV uploaded to:", csvPath);
         
             // Now read the CSV using csvPath
     
@@ -59,45 +59,53 @@ class ProductController{
         const results: any[] = []
     
         try {
-            // Wrap CSV reading in a Promise to await it
+
+            
+
             await new Promise<void>((resolve, reject) => {
-                fs.createReadStream(file.path)
-                    .pipe(csv())
-                    .on("data", (data) => results.push(data))
-                    .on("end", resolve)
-                    .on("error", reject)
-            })
+           
+              const readable = new stream.Readable();
+              readable._read = () => {}; // noop
+              readable.push(file.buffer);
+              readable.push(null);
+            
+              readable
+                .pipe(csv())
+                .on("data", (data:any) => results.push(data))
+                .on("end", resolve)
+                .on("error", reject);
+            });
     
             // Process rows after CSV is fully read
             for (const row of results) {
-                const { name, description, price, stockQty, categoryId, image } = row
+                const { productName, description, price, stockQty, categoryId, image } = row
     
-                if (!name || !description || !price || !stockQty || !categoryId || !image) {
+                if (!productName || !description || !price || !stockQty || !categoryId || !image) {
                     console.log("Skipping invalid row:", row)
                     continue
                 }
-                const parsedCategoryId = parseInt(categoryId) || categoryId; // if you use UUIDs
+
 
     
                 await Product.create({
-                    productName: name,
+                    productName,
                     description,
                     price: parseFloat(price),
                     stockQty: parseInt(stockQty),
                     imageUrl: image,
-                    userId: (req as any).user?.id,
-                    categoryId: categoryId,
+                    userId: req.user?.id,
+                    categoryId,
                 })
             }
     
-            fs.unlinkSync(file.path) // remove CSV after processing
+
     
             res.status(200).json({
                 message: "Bulk products uploaded successfully",
                 total: results.length,
             })
         } catch (err) {
-            console.error(err)
+            console.error("Bulk upload error:",err)
             res.status(500).json({ message: "Error uploading bulk products" })
         }
     }
