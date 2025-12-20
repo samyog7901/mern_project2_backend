@@ -9,7 +9,12 @@ const PORT = process.env.PORT || 3000
 import './database/connection'
 import jwt from 'jsonwebtoken'
 
+import cors from 'cors'
 
+app.use(cors({
+    origin: /https:\/\/ecommerce-(admin|c)-[a-z0-9-]+\.vercel\.app/,
+    credentials: true, // if you need cookies or auth headers
+  }));
 app.use(express.json())
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")))
@@ -24,7 +29,6 @@ import productRoute from './routes/productRoute'
 import cartRoute from './routes/cartRoute'
 import orderRoute from './routes/orderRoute'
 
-import cors from 'cors'
 import { Server } from 'socket.io'
 import { promisify } from 'util'
 import User from './database/models/userModel'
@@ -33,22 +37,9 @@ import OrderDetail from './database/models/OrderDetails'
 import Payment from './database/models/Payment'
 
 
-app.use(cors({
-    origin: /https:\/\/ecommerce-(admin|c)-.*\.vercel\.app/,
-    credentials: true, // if you need cookies or auth headers
-  }));
 
 
 
-
-
-
-
-app.use("",userRoute)
-app.use("/admin/product",productRoute)
-app.use("/admin/category",categoryRoute)
-app.use("/customer/cart",cartRoute)
-app.use("/order",orderRoute)
 
 
 const server = app.listen(PORT,()=>{
@@ -73,6 +64,12 @@ export const io = new Server(server,{
     }
 
 })
+
+app.use("",userRoute)
+app.use("/admin/product",productRoute)
+app.use("/admin/category",categoryRoute)
+app.use("/customer/cart",cartRoute)
+app.use("/order",orderRoute)
 
 const onlineUsers = new Map<string, { socketId: string; role: string }>();
 
