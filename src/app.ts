@@ -10,9 +10,20 @@ import './database/connection'
 import jwt from 'jsonwebtoken'
 
 import cors from 'cors'
+const allowedOrigins = [
+    'https://ecommerce-admin-five-omega.vercel.app',
+    'https://ecommerce-c.vercel.app'
+  ];
 
 app.use(cors({
-    origin: /https:\/\/ecommerce-(admin|c)-[a-z0-9-]+\.vercel\.app/,
+    origin: (origin, callback) => {
+        // Allow if origin is in our list or if no origin (like Postman)
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error("Not allowed by CORS"));
+        }
+    },
     credentials: true, // if you need cookies or auth headers
   }));
 app.use(express.json())
@@ -47,20 +58,11 @@ const server = app.listen(PORT,()=>{
     console.log(`Server is running on port ${PORT}`)
 })
 
+
 export const io = new Server(server,{
     cors : {
-        origin: (origin, callback) => {
-            const allowedOrigins = [
-              'https://ecommerce-admin-five-omega.vercel.app',
-              'https://ecommerce-c.vercel.app'
-            ];
-            if (!origin || allowedOrigins.includes(origin)) {
-              callback(null, true);
-            } else {
-              callback(new Error("Not allowed by CORS"));
-            }
-        },
-          credentials: true, // if you use cookies or auth headers
+        origin: allowedOrigins,
+        credentials: true, // if you use cookies or auth headers
     }
 
 })
