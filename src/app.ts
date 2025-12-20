@@ -34,7 +34,7 @@ import Payment from './database/models/Payment'
 
 
 app.use(cors({
-    origin: /https:\/\/ecommerce-(admin|client)-.*\.vercel\.app/,
+    origin: /https:\/\/ecommerce-(admin|c)-.*\.vercel\.app/,
     credentials: true, // if you need cookies or auth headers
   }));
 
@@ -61,7 +61,7 @@ export const io = new Server(server,{
         origin: (origin, callback) => {
             const allowedOrigins = [
               'https://ecommerce-admin-five-omega.vercel.app',
-              'https://ecommerce-client-eta-plum.vercel.app'
+              'https://ecommerce-c.vercel.app'
             ];
             if (!origin || allowedOrigins.includes(origin)) {
               callback(null, true);
